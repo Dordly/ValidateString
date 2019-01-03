@@ -10,9 +10,7 @@
 
 @interface ValidateString : NSObject
 /**改变按钮倒计时与状态*/
-+(void)changeVerifyButtonState:(UIButton *)sender;
-/**手机格式*/
-+(BOOL)validateWithMobile:(NSString *)mobile;
++(void)changeVerifyButtonState:(UIButton *)sender WithType:(NSString *)type;
 /**密码格式*/
 +(BOOL)validateWithPassword:(NSString *)password;
 /**判断姓名格式*/ 
@@ -25,6 +23,7 @@
 +(BOOL)stringContainEmoji:(NSString *)emoji;
 /**字符串替换*/
 +(NSString *)StringChooseString:(NSString *)chooseStr;
++(NSString *)StringString:(NSString *)chooseStr;
 /**判断字符串 首字符是否为字母*/
 +(BOOL)JudgeString:(NSString *)string;
 /**时间字符串转星期*/
@@ -42,7 +41,7 @@
  @return 是否打开
  */
 //检测通知是否打开iOS8以后有所变化 所以需要适配iOS7
-+(BOOL)openThePushNotification;
+//+(BOOL)openThePushNotification;
 /**
  *  获取手机型号
  */
@@ -72,6 +71,10 @@
 */
 + (NSString *)URLEncodedString:(NSString *)strUrl;
 /**
+ *  显示提示信息框
+*/
++ (void)showErrorInfo:(NSString *)errorInfo Width:(CGFloat)width;
+/**
 *  显示原生弹窗
 */
 + (void)showInfo:(NSString *)info VC:(UIViewController *)VC;
@@ -96,6 +99,34 @@
 */
 + (BOOL)matchesWithFormatString:(NSString *)formatStr tagaetStr:(NSString *)targetStr;
 /**
+*  Base64加密
+*/
++ (NSString *)base64WithString:(NSString *)str;
+/**
+ *  确认快捷支付RSA加密
+*/
++ (NSString *)QuickpayRSAEncryptWithString:(NSString *)str;
+/**
+ *  RSA加密
+*/
++ (NSString *)RSAEncryptWithString:(NSString *)str;
+/**
+ *  RSA解密
+*/
++ (NSString *)RSADecryptWithString:(NSString *)str;
+/**
+*  AES加密
+*/
++ (NSString *)AESCryptWithString:(NSString *)str Key:(NSString *)key;
+/**
+*  AES解密
+*/
++ (NSString *)AESDecryptWithString:(NSString *)str Key:(NSString *)key;
+/**
+*  MD5加密
+*/
++ (NSString *)MD5WithString:(NSString *)str;
+/**
  * 判断银行卡是否合法
  */
 +(BOOL)checkBankCardNumber:(NSString *)cardNumber;
@@ -109,7 +140,7 @@
 /**判断字符串中是否包含文字*/
 +(BOOL)IsChinese:(NSString *)str;
 + (BOOL)isLocationServiceOpen;
-/**过滤指定字符串   里面的指定字符根据自己的需要添加 过滤特殊字符*/
+/**过滤指定字符串里面的指定字符根据自己的需要添加 过滤特殊字符*/
 +(NSString*)RemoveSpecialCharacter: (NSString *)str;
 /**时间比较*/
 +(int)compareOneDay:(NSDate *)oneDay withAnotherDay:(NSDate *)anotherDay;
@@ -119,4 +150,10 @@
 +(BOOL)determineWhetherTheAPPOpensTheLocation;
 /**此方法是用来判断一个字符串是不是整型.如果传进的字符串是一个字符,可以用来判断它是不是数字*/
 + (BOOL) deptNumInputShouldNumber:(NSString *)str;
++(BOOL)isBlankString:(NSString *)string;
++ (BOOL)validateNumber:(NSString*)number ;
+/**判断当前日期星期几*/
++(NSString*)weekdayStringFromDate:(NSDate*)inputDate;
+/**本地图片置灰*/
++(UIImage *)changeGrayImage:(UIImage *)oldImage;
 @end

@@ -11,43 +11,7 @@
 #import <CommonCrypto/CommonCrypto.h>
 
 @implementation ValidateString
-+(void)changeVerifyButtonState:(UIButton *)sender
-{
-    __block int countDown = 120;
-    dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
-    dispatch_source_t timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0,queue);
-    dispatch_source_set_timer(timer,dispatch_walltime(NULL, 0),1.0*NSEC_PER_SEC, 0);
-    dispatch_source_set_event_handler(timer, ^{
-        if(countDown <= 0)
-        {
-            //倒计时结束，关闭
-            dispatch_source_cancel(timer);
-            dispatch_async(dispatch_get_main_queue(), ^{
-                //设置界面的按钮显示
-                sender.enabled = YES;
-                sender.backgroundColor = Main_Color;
-                [sender setTitle:@"重新获取验证码" forState:UIControlStateNormal];
-            });
-        }
-        else
-        {
-            NSString *TimeString = [NSString stringWithFormat:@"%.2d", countDown];
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [sender setTitle:[NSString stringWithFormat:@"%@秒再次获取",TimeString] forState:UIControlStateNormal];
-                sender.backgroundColor = MainTwoText_Color;
-                sender.enabled = NO;
-            });
-            countDown--;
-        }
-    });
-    dispatch_resume(timer);
-}
-+(BOOL)validateWithMobile:(NSString *)mobile
-{
-    NSString * phone = @"^1([3-9]\\d{9}$)";
-    NSPredicate *phoneTest = [NSPredicate predicateWithFormat:@"SELF MATCHES %@",phone];
-    return [phoneTest evaluateWithObject:mobile];
-}
+/**判断密码格式*/
 +(BOOL)validateWithPassword:(NSString *)password
 {
     //密码只包含字母，数字，字符中至少两种
@@ -56,6 +20,7 @@
     return [pas evaluateWithObject:password];
 }
 #pragma mark ~~~判断姓名格式
+/**用户名*/
 +(BOOL)validateUserName:(NSString *)name
 {
     NSString *userNameRegex = @"^[A-Za-z0-9]{3,20}+$";
@@ -63,17 +28,20 @@
     BOOL B = [userNamePredicate evaluateWithObject:name];
     return B;
 }
+/**昵称*/
 +(BOOL)validateNickname:(NSString *)nickname
 {
     NSString *nicknameRegex = @"^[\u4E00-\u9FA5\uf900-\ufa2d·s•]{2,20}$";
     NSPredicate *passWordPredicate = [NSPredicate predicateWithFormat:@"SELF MATCHES %@",nicknameRegex];
     return [passWordPredicate evaluateWithObject:nickname];
 }
+/**邮箱*/
 +(BOOL)ValidateEmail:(NSString *)email {
     NSString *emailRegex = @"[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}";
     NSPredicate *emailTest = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", emailRegex];
     return [emailTest evaluateWithObject:email];
 }
+/**过滤所有Emoji标签符号*/
 +(BOOL)stringContainEmoji:(NSString *)emoji{
     __block BOOL returnValue = NO;
     [emoji enumerateSubstringsInRange:NSMakeRange(0, [emoji length]) options:NSStringEnumerationByComposedCharacterSequences usingBlock:
@@ -122,6 +90,17 @@
 //    NSLog(@"DELECTONE----%@",three);
     return three;
 }
+#pragma mark - 字符串替换 -
++(NSString *)StringString:(NSString *)chooseStr{
+    NSCharacterSet *set = [NSCharacterSet characterSetWithCharactersInString:@"@／：；（）¥「」＂、[]{}#%-*+=_\\|~＜＞$€^•'@#$%^&*()_+'\"."];
+    NSString *trimmedString = [chooseStr stringByTrimmingCharactersInSet:set];
+//    NSLog(@"DELECT----%@",trimmedString);
+//    NSString *str = [trimmedString stringByReplacingOccurrencesOfString:@"\"," withString:@"、"];//替换字符
+    NSString * twoStr = [trimmedString stringByReplacingOccurrencesOfString:@"\"" withString:@""];
+    NSString * three = [twoStr stringByReplacingOccurrencesOfString:@"." withString:@""];
+//    NSLog(@"DELECTONE----%@",three);
+    return three;
+}
 #pragma mark - 判断字符串 首字符是否为字母 -
 +(BOOL)JudgeString:(NSString *)string{
     NSString *regex = @"[A-Za-z]+";
@@ -152,23 +131,6 @@
     NSString *currentDateStr = [dateFormatter stringFromDate:detaildate];
     return currentDateStr;
 }
-/**当前时间戳转换成时间*/
-+ (NSString *)currentDateWithFormat:(NSString *)format
-{
-    NSDate *detaildate = [NSDate date];
-    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];//实例化一个NSDateFormatter对象
-    [dateFormatter setDateFormat:format];//设定时间格式,这里可以设置成自己需要的格式
-    NSString *currentDateStr = [dateFormatter stringFromDate:detaildate];
-    return currentDateStr;
-}
-/** NSString 转NSDate */
-+ (NSDate *)dateWithdate:(NSString *)str Format:(NSString *)format
-{
-    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];//实例化一个NSDateFormatter对象
-    [dateFormatter setDateFormat:format];//设定时间格式,这里可以设置成自己需要的格式
-    NSDate * mainDate = [dateFormatter dateFromString:str];
-    return mainDate;
-}
 /**时间戳转换时间-毫秒*/
 + (NSString *)dateMSWithString:(NSString *)str Format:(NSString *)format
 {
@@ -188,42 +150,43 @@
     NSString *currentDateStr = [dateFormatter stringFromDate:date];
     return currentDateStr;
 }
+/** NSString 转NSDate */
++ (NSDate *)dateWithdate:(NSString *)str Format:(NSString *)format
+{
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];//实例化一个NSDateFormatter对象
+    [dateFormatter setDateFormat:format];//设定时间格式,这里可以设置成自己需要的格式
+    NSDate * mainDate = [dateFormatter dateFromString:str];
+    return mainDate;
+}
+/**当前时间戳转换成时间*/
++ (NSString *)currentDateWithFormat:(NSString *)format
+{
+    NSDate *detaildate = [NSDate date];
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];//实例化一个NSDateFormatter对象
+    [dateFormatter setDateFormat:format];//设定时间格式,这里可以设置成自己需要的格式
+    NSString *currentDateStr = [dateFormatter stringFromDate:detaildate];
+    return currentDateStr;
+}
 /**
  系统通知是否打开
  @return 是否打开
  */
 //检测通知是否打开iOS8以后有所变化 所以需要适配iOS7
-+(BOOL)openThePushNotification{
-    if (IOS8) {//IOS8写的宏
-        if ([[UIApplication sharedApplication] currentUserNotificationSettings].types  == UIUserNotificationTypeNone) {
-            //         未打开通知//这个是个自定义的alertView 当用户没有打开推送时  会弹出 可以替换成自己项目里面的弹框
-            if (IOS8) {//iOS8以后跳转到设置界面的代码也出现了变化 下面这段代码是直接跳转到APP的设置界面
-                //跳入当前App设置界面
-                [[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];
-            }else{
-                //适配iOS7 ,跳入系统设置界面
-                [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"prefs:General&path=Reset"]];
-            }
-            return NO;
-        }else{
-            return YES;
-        }
-    }else{ // ios7
-        if ([[UIApplication sharedApplication] enabledRemoteNotificationTypes]  == UIUserNotificationTypeNone) {
-            if (IOS8) {
-                //跳入当前App设置界面
-                [[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];
-            }else{
-                //适配iOS7 ,跳入系统设置界面
-                [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"prefs:General&path=Reset"]];
-            }
-            return NO;
-        }else{
-            
-            return YES;
-        }
-    }
-}
+//+(BOOL)openThePushNotification{
+//    if ([[UIApplication sharedApplication] currentUserNotificationSettings].types  == UIUserNotificationTypeNone) {
+//        //         未打开通知//这个是个自定义的alertView 当用户没有打开推送时  会弹出 可以替换成自己项目里面的弹框
+//        if (IOS8) {//iOS8以后跳转到设置界面的代码也出现了变化 下面这段代码是直接跳转到APP的设置界面
+//            //跳入当前App设置界面
+//            [[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];
+//        }else{
+//            //适配iOS7 ,跳入系统设置界面
+//            [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"prefs:General&path=Reset"]];
+//        }
+//        return NO;
+//    }else{
+//        return YES;
+//    }
+//}
 /**
 *  获取手机型号
 */
@@ -254,6 +217,10 @@
     if ([platform isEqualToString:@"iPhone10,5"]) return @"iPhone 8 Plus";
     if ([platform isEqualToString:@"iPhone10,3"]) return @"iPhone X";
     if ([platform isEqualToString:@"iPhone10,6"]) return @"iPhone X";
+    if ([platform isEqualToString:@"iPhone11,8"]) return @"iPhone XR";
+    if ([platform isEqualToString:@"iPhone11,2"]) return @"iPhone XS";
+    if ([platform isEqualToString:@"iPhone11,6"]) return @"iPhone XS Max";
+    if ([platform isEqualToString:@"iPhone11,4"]) return @"iPhone XS Max";
     if ([platform isEqualToString:@"i386"])      return @"iPhone Simulator";
     if ([platform isEqualToString:@"x86_64"])    return @"iPhone Simulator";
     
@@ -294,6 +261,7 @@
     }
     return dic;
 }
+
 /**
  *  通过文字来计算文字所占的区域大小
  */
@@ -352,6 +320,23 @@
 }
 
 /**
+ *  显示提示信息框
+ */
++ (void)showErrorInfo:(NSString *)errorInfo Width:(CGFloat)width
+{
+    LemonBubbleInfo *iconInfo = [[LemonBubbleInfo alloc] init];
+    iconInfo.maskColor = RGBA(0, 0, 0, 0.4);
+    //    iconInfo.backgroundColor = Color_white;
+    //    iconInfo.titleColor = [UIColor darkGrayColor];
+    iconInfo.locationStyle = BUBBLE_LOCATION_STYLE_BOTTOM;
+    iconInfo.layoutStyle = BUBBLE_LAYOUT_STYLE_TITLE_ONLY;
+    iconInfo.title = errorInfo;
+    iconInfo.proportionOfDeviation = 0.05;
+    iconInfo.bubbleSize = CGSizeMake(width, DHEIGHT(80));
+    [[LemonBubbleView defaultBubbleView] showWithInfo:iconInfo autoCloseTime:2];
+}
+
+/**
  *  显示原生弹窗
  */
 + (void)showInfo:(NSString *)info VC:(UIViewController *)VC
@@ -367,9 +352,8 @@
  */
 + (BOOL)matchesWithPhoneNumber:(NSString *)phoneNumber
 {
-    return [self matchesWithFormatString:@"^1([3-9]\\d{9}$)" tagaetStr:phoneNumber];
+    return [self matchesWithFormatString:@"^((13[0-9])|(15[^4])|(18[0,2,3,5-9])|(17[0-8])|(147))\\d{8}$|^(5|6|8|9)\\d{7}$" tagaetStr:phoneNumber];
 }
-
 /**
  *  匹配身份证号码
  */
@@ -383,7 +367,7 @@
  */
 + (BOOL)matchesWithName:(NSString *)nameStr
 {
-    return [self matchesWithFormatString:@"^[\u4E00-\u9FA5]{2,5}(?:·[\u4E00-\u9FA5]{2,5})*" tagaetStr:nameStr];
+    return [self matchesWithFormatString:@"^[\u4E00-\u9FA5]{2,20}(?:·[\u4E00-\u9FA5]{2,20})*" tagaetStr:nameStr];
 }
 
 /**
@@ -404,6 +388,135 @@
     return [match evaluateWithObject:targetStr];
 }
 
+/**
+ *  Base64加密
+ */
++ (NSString *)base64WithString:(NSString *)str
+{
+    NSData *data = [str dataUsingEncoding:NSUTF8StringEncoding];
+    return [data base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
+}
+
+/**
+ *  确认快捷支付RSA加密
+ */
+
++ (NSString *)QuickpayRSAEncryptWithString:(NSString *)str
+{
+    CRSA *RSA = [CRSA shareInstance];
+    [RSA writePukWithKey:QuickPayPubKey];
+    NSString *pubStr = [RSA encryptByRsaWithCutData:str keyType:(KeyTypePublic)];
+
+    return pubStr;
+}
+
+/**
+ *  RSA加密
+ */
+
+
++ (NSString *)RSAEncryptWithString:(NSString *)str
+{
+    CRSA *RSA = [CRSA shareInstance];
+    [RSA writePukWithKey:PubKey];
+    NSString *pubStr = [RSA encryptByRsaWithCutData:str keyType:(KeyTypePublic)];
+
+    return pubStr;
+}
+
+/**
+ *  RSA解密
+ */
+
++ (NSString *)RSADecryptWithString:(NSString *)str
+{
+    CRSA * RSA = [CRSA shareInstance];
+    [RSA writePukWithKey:PubKey];
+//    [RSA writePrkWithKey:PubKey];
+    NSString *pubStr = [RSA decryptByRsaWithCutData:str keyType:(KeyTypePublic)];
+    return pubStr;
+}
+
+/**
+ *  AES加密
+ */
+
++ (NSString *)AESCryptWithString:(NSString *)str Key:(NSString *)key
+{
+    NSString *AESStr = [SecurityUtil encryptAESData:str Key:key];
+    return AESStr;
+}
+
+/**
+ *  AES解密
+ */
++ (NSString *)AESDecryptWithString:(NSString *)str Key:(NSString *)key
+{
+    NSString *AESStr = [SecurityUtil decryptAESData:str Key:key];
+    return AESStr;
+}
+
+/**
+ *  MD5加密
+ */
++ (NSString *)MD5WithString:(NSString *)str
+{
+    NSData *stringData = [str dataUsingEncoding:NSUTF8StringEncoding];
+    unsigned char result[CC_MD5_DIGEST_LENGTH];//加密后的长度
+    /**
+     CC_MD5(const void *data, CC_LONG len, unsigned char *md)
+
+     data：是将要加密的数据
+     len：代表需要加载的数据长度
+     md：是加密之后的密文
+     */
+    CC_MD5(stringData.bytes, (CC_LONG)stringData.length, result);
+    NSMutableString *resultStr = [NSMutableString string];
+    for (int i = 0; i < CC_MD5_DIGEST_LENGTH; i ++)
+    {
+        [resultStr appendFormat:@"%02x",result[i]];
+    }
+    return [resultStr uppercaseString];
+}
+/**
+ *  改变按钮倒计时与状态
+ */
++(void)changeVerifyButtonState:(UIButton *)sender WithType:(NSString *)type
+{
+    __block int countDown = 120;
+    dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+    dispatch_source_t timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0,queue);
+    dispatch_source_set_timer(timer,dispatch_walltime(NULL, 0),1.0*NSEC_PER_SEC, 0);
+    dispatch_source_set_event_handler(timer, ^{
+        if(countDown <= 0)
+        {
+            //倒计时结束，关闭
+            dispatch_source_cancel(timer);
+            dispatch_async(dispatch_get_main_queue(), ^{
+                //设置界面的按钮显示
+                sender.enabled = YES;
+                sender.backgroundColor = Main_Color;
+                if([type isEqualToString:@"重新获取"]){
+                    [sender setTitle:type forState:UIControlStateNormal];
+                }else{
+                    [sender setTitle:@"重新获取验证码" forState:UIControlStateNormal];
+                }
+                
+            });
+        }
+        else
+        {
+            NSString *TimeString = [NSString stringWithFormat:@"%.2d", countDown];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [sender setTitle:[NSString stringWithFormat:@"%@秒再次获取",TimeString] forState:UIControlStateNormal];
+                sender.backgroundColor = MainTwoText_Color;
+                sender.enabled = NO;
+            });
+            countDown--;
+        }
+    });
+    dispatch_resume(timer);
+}
 /**
  * 判断银行卡是否合法
  */
@@ -447,7 +560,6 @@
 }
 //获取当前系统时间的时间戳
 #pragma mark - 获取当前时间的 时间戳
-
 +(NSInteger)getNowTimestamp{
     NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
     [formatter setDateStyle:NSDateFormatterMediumStyle];
@@ -611,4 +723,84 @@
     }
     return NO;
 }
++(BOOL)isBlankString:(NSString *)string {
+    
+    if (string == nil || string == NULL) {
+        
+        return YES;
+        
+    }
+    
+    if ([string isKindOfClass:[NSNull class]]) {
+        
+        return YES;
+        
+    }
+    
+    if ([[string stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] length]==0) {
+        
+        return YES;
+        
+    }
+    
+    return NO;
+    
+}
++ (BOOL)validateNumber:(NSString*)number {
+    BOOL res = YES;
+    NSCharacterSet* tmpSet = [NSCharacterSet characterSetWithCharactersInString:@"0123456789"];
+    int i = 0;
+    while (i < number.length) {
+        NSString * string = [number substringWithRange:NSMakeRange(i, 1)];
+        NSRange range = [string rangeOfCharacterFromSet:tmpSet];
+        if (range.length == 0) {
+            res = NO;
+            break;
+        }
+        i++;
+    }
+    return res;
+}
+
++(NSString*)weekdayStringFromDate:(NSDate*)inputDate {
+    
+    NSArray *weekdays = [NSArray arrayWithObjects: [NSNull null], @"周日", @"周一", @"周二", @"周三", @"周四", @"周五", @"周六", nil];
+    
+    NSCalendar *calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierChinese];
+    
+    NSTimeZone *timeZone = [[NSTimeZone alloc] initWithName:@"Asia/Shanghai"];
+    
+    [calendar setTimeZone: timeZone];
+    
+    NSCalendarUnit calendarUnit = NSCalendarUnitWeekday;
+    
+    NSDateComponents *theComponents = [calendar components:calendarUnit fromDate:inputDate];
+    
+    return [weekdays objectAtIndex:theComponents.weekday];
+    
+}
++(UIImage *)changeGrayImage:(UIImage *)oldImage
+{
+    int bitmapInfo = kCGImageAlphaNone;
+    int width = oldImage.size.width;
+    int height = oldImage.size.height;
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceGray();
+    CGContextRef context = CGBitmapContextCreate (nil,
+                                                  width,
+                                                  height,
+                                                  8,
+                                                  0,
+                                                  colorSpace,
+                                                  bitmapInfo);
+    CGColorSpaceRelease(colorSpace);
+    if (context == NULL) {
+        return nil;
+    }
+    CGContextDrawImage(context,
+                       CGRectMake(0, 0, width, height), oldImage.CGImage);
+    UIImage *grayImage = [UIImage imageWithCGImage:CGBitmapContextCreateImage(context)];
+    CGContextRelease(context);
+    return grayImage;
+}
+
 @end
